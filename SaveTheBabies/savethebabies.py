@@ -337,7 +337,7 @@ class Spawner:
 	
 	
 	startdelay = 200
-	interval = 0
+	interval = 600
 	
 	warningdelay = 50
 	
