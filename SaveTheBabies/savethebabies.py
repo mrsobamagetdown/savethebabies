@@ -540,7 +540,7 @@ class Baby:
 		for item in game.items:
 			if self.rect.colliderect(item.rect) and (self.health > 0 or item.posthumous):
 				if not item in self.touching or item.damage >= 0:
-					if (item.damage > 0 and self.health > 0 and self.health < self.maxhealth and not self.boss) or item.damage <= 0:
+					if (item.damage > 0 and self.health < self.maxhealth and not self.boss) or item.damage <= 0:
 						self.health += item.damage
 						if item.hideable:
 							item.shown = False
