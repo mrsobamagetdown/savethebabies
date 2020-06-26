@@ -13,7 +13,7 @@ import sys
 pygame.init()
 
 def debug(do=True):
-	print(game.frames)
+	#print(game.frames)
 	#print(Spawner.time)
 	#print(game.bossfight)
 	#print(str(game.lost) + '  ' + str(game.running))
@@ -141,11 +141,18 @@ class Game:
 		self.babies.clear()
 		self.items.clear()
 		
+		
+		furnace = Spawner(100, 'furnace.png', 'furnace_active.png')
+		doghouse = Spawner(100, 'doghouse.png', 'doghouse_eyes.png')
+		chest = Spawner(100, 'chest.png', 'chest_open.png')
+		catbed = Spawner (100, 'bed.png', 'bed_empty.png')
+
+		
 		size = Baby.size
 		
-		baby1 = Baby(size, 'baby1.png', 2)
-		baby2 = Baby(size, 'baby2.png', 1.5, randomness=20)
-		baby3 = Baby(size, 'baby3.png', 3, randomness=10)
+		baby1 = Baby(size, 'baby1.png', 2, randomness=0, spawner=furnace)
+		baby2 = Baby(size, 'baby2.png', 1.5, randomness=20, spawner=furnace)
+		baby3 = Baby(size, 'baby3.png', 3, randomness=10, spawner=furnace)
 		
 		doggo = Baby(size, 'doggo.png', 4, randomness=40, spawner=doghouse)
 		doggo2 = Baby(size, 'doggo2.png', 4.5, randomness=50, spawner=doghouse)
@@ -160,9 +167,9 @@ class Game:
 		
 		size = Item.size
 		
-		paulbro = Item(size*0.9, 'paulbro.png')
-		ninja = Item(size*0.9, 'ninja.png')
-		ninja2 = Item(size*0.9, 'ninja2.png')
+		paulbro = Item(size*0.70, 'paulbro.png')
+		ninja = Item(size*0.70, 'ninja.png')
+		ninja2 = Item(size*0.8, 'ninja2.png')
 		
 		bike = Item(size*1.5, 'bike.png')
 		knife = Item(size*0.75, 'sword.png', flip=True)
@@ -185,6 +192,7 @@ class Game:
 	
 	def play(self):
 		self.loop()
+		self.draw()
 		self.draw()
 		
 	
@@ -218,8 +226,8 @@ class Game:
 					baby.loop()
 					
 			self.checkBoss()
-			
-			lost = self.level == len(self.babies) - 1 and len(deceased) == len(babies)
+			if self.level == len(self.babies) and len(self.deceased) == len(self.babies):
+				self.lost = True
 			
 			self.keepTime()
 		self.resetInput()
@@ -257,7 +265,9 @@ class Game:
 		if self.keys[pygame.K_ESCAPE]:
 			pygame.display.iconify()
 		if self.keys[pygame.K_r]:
-			self.setup()
+			global game
+			game = Game()
+			game.setup()
 		if self.keys[pygame.K_g]:
 			self.pg = not self.pg
 		if self.keys[pygame.K_b]:
@@ -283,6 +293,7 @@ class Game:
 		if self.lost:
 			caption = 'You blithing idiot, look what you did! (R to restart)'
 			captionchanged = True
+			print("lost")
 		
 		elif self.bossfight:
 			for baby in self.bosses:
@@ -326,7 +337,7 @@ class Spawner:
 	
 	
 	startdelay = 200
-	interval = 600
+	interval = 0
 	
 	warningdelay = 50
 	
@@ -376,14 +387,6 @@ class Spawner:
 			game.level += 1
 	
 
-furnace = Spawner(100, 'furnace.png', 'furnace_active.png')
-chest = Spawner(100, 'chest.png', 'chest_open.png')
-doghouse = Spawner(100, 'doghouse.png', 'doghouse_eyes.png')
-catbed = Spawner (100, 'bed.png', 'bed_empty.png')
-
-
-
-
 class Baby:
 	
 	size = 65
@@ -393,7 +396,7 @@ class Baby:
 	ghost = loadImage('ghost.png', size)
 	ghost.fill((255, 255, 255, 172), None, pygame.BLEND_RGBA_MULT)
 	
-	def __init__(self, size, image, speed, randomness=0, spawner=game.spawners[0], canpause=False, turnrange=(-1, 1), health=5, boss=False):
+	def __init__(self, size, image, speed, randomness, spawner, canpause=False, turnrange=(-1, 1), health=5, boss=False):
 		game.babies.append(self)
 		self.spawner = spawner
 		self.image = loadImage(image, size)
@@ -658,7 +661,7 @@ class Item:
 		if (not self.powerup) and (not game.dragging is self):
 			touching = 0
 			for item in game.items:
-				if self.rect.colliderect(item):# and not self is item:
+				if self.rect.colliderect(item) and not item.powerup:# and not self is item:
 					touching += 1
 			if touching > 2:
 				self.setRandPos()
